@@ -9,7 +9,9 @@ import (
 )
 
 func AddBook() {
-	_, err := config.ConnectDB().Exec("INSERT INTO books(title_book, author, description_book, category_book, cupboard) VALUES ('The Great Gatsby', 'F. Scott Fitzgerald', 'Novel klasik tentang mimpi Amerika', 'Fiction', 'Shelf A')")
+	query := "INSERT INTO books(title, author, category, cupboard) VALUES (?, ?, ?, ?)"
+	_, err := config.ConnectDB().Exec(query,
+		"The Great Gatsby", "F. Scott Fitzgerald", "Fiction", "Shelf A")
 	if err != nil {
 		log.Fatal("Created error: ", err)
 	}
@@ -18,7 +20,8 @@ func AddBook() {
 }
 
 func ReadBook() {
-	rows, err := config.ConnectDB().Query("SELECT title_book, author, category_book, cupboard FROM books")
+	query := "SELECT title, author, category, cupboard FROM books"
+	rows, err := config.ConnectDB().Query(query)
 
 	if err != nil {
 		log.Fatal("Readed error: ", err)
@@ -26,32 +29,59 @@ func ReadBook() {
 
 	defer rows.Close()
 
+	var books []models.Book
+
 	for rows.Next() {
 		var book models.Book
-		err := rows.Scan(&book.TitleBook, &book.Author, &book.CategoryBook, &book.Cupboard)
-
+		err := rows.Scan(&book.Title, &book.Author, &book.Category, &book.Cupboard)
 		if err != nil {
-			log.Println(err)
+			log.Println("Row scan error:", err)
 			continue
 		}
+		books = append(books, book)
+	}
 
-		fmt.Println("Title: , Author, Category: , Cupboard: \n", book.TitleBook, book.Author, book.CategoryBook, book.Cupboard)
+	if err := rows.Err(); err != nil {
+		log.Fatal("Rows error:", err)
+	}
+
+	if len(books) == 0 {
+		fmt.Println("No books found.")
+		return
+	}
+
+	fmt.Println("Books found:")
+	for _, book := range books {
+		fmt.Println("Title: Author:  Category:  Cupboard: \n", book.Title, book.Author, book.Category, book.Cupboard)
 	}
 }
 
 func UpdateBook() {
-	_, err := config.ConnectDB().Exec("UPDATE books SET author=?, cupboard=? WHERE id_book=?", "Raka", "Shelf B", 2)
+	query := "UPDATE books SET author=?, cupboard=? WHERE id_book=?"
+	_, err := config.ConnectDB().Exec(query, "Raka", "Shelf B", 2)
 	if err != nil {
 		log.Fatal("Updated error", err)
 	}
 
 	fmt.Println("Updated has been success")
 }
+
 func DeletedBook() {
-	_, err := config.ConnectDB().Exec("DELETE FROM books WHERE id_book=?", 2)
+	query := "DELETE FROM books WHERE id_book=?"
+	_, err := config.ConnectDB().Exec(query, 4)
 	if err != nil {
 		log.Fatal("Delete error: ", err)
 	}
 
 	fmt.Println("Book has been deleted")
+}
+
+// soft delete methode (optional)
+func SoftDeletedBook() {
+	query := "UPDATE books SET is_deleted=true WHERE id_book=?"
+	_, err := config.ConnectDB().Exec(query, 1)
+	if err != nil {
+		log.Fatal("Soft delete error: ", err)
+	}
+	fmt.Println("Book has been deleted by soft delete")
 }

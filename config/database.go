@@ -7,7 +7,7 @@ import (
 )
 
 func ConnectDB() *sql.DB {
-	dsn := "root:admin@tcp(localhost:3306)/db_library"
+	dsn := "root:admin@tcp(localhost:3306)/db_minilib"
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
 		panic(err)

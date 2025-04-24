@@ -13,7 +13,7 @@ func main() {
 	fmt.Print("Database has been connected\n")
 
 	if len(os.Args) < 2 {
-		fmt.Println("Usage: go run main.go [create|read|update|delete]")
+		fmt.Println("Usage: go run main.go [create|read|update|delete|softdelete]")
 		return
 	}
 
@@ -24,6 +24,8 @@ func main() {
 		controllers.ReadBook()
 	case "update":
 		controllers.UpdateBook()
+	case "softdelete":
+		controllers.SoftDeletedBook()
 	case "delete":
 		controllers.DeletedBook()
 	}
